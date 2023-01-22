@@ -1,21 +1,29 @@
 const Sequelize = require('sequelize')
-const BookmarkModel = require('../model/bookmark.model')
+require('dotenv').config()
+
 const CartModel = require('../model/cart.model')
 const CategoryModel = require('../model/category.model')
-const CollocationModel = require('../model/collocation.model')
-const DepartmentModel = require('../model/department.model')
 const UserModel = require('../model/user.model')
 const ProductModel = require('../model/product.model')
-const VariantModel = require('../model/variant.model')
 const ResetPasswordModel = require('../model/reset_password.model')
+const SubCategoryModel = require('../model/subCategory.model')
+const OrderModel = require('../model/order.model')
+const AddressModel = require('../model/address.model')
+
+const DATABASE =process.env.DATABASE 
+const USERNAME = process.env.DATABASE_USERNAME
+const PASSWORD = process.env.PASSWORD 
+const HOST = process.env.DATABASE_HOST 
+const DIALECT = process.env.DIALECT 
 
 
-const sequelize = new Sequelize('e_commerce','root','',{
-    host: 'localhost',
-    dialect: 'mysql'
+const sequelize = new Sequelize(DATABASE,USERNAME,PASSWORD,{
+    host: HOST,
+    dialect: DIALECT,
 })
 
 sequelize.authenticate().then(() => {
+    console.log(HOST);
     console.log('Db connection established');
 }).catch((error) => {
     console.log(`Error ${error}`);   
@@ -26,55 +34,43 @@ var db = {
     Sequelize: Sequelize,
     sequelize: sequelize,
     User: UserModel(sequelize),
+    Address: AddressModel(sequelize),
     Category: CategoryModel(sequelize),
-    Department: DepartmentModel(sequelize),
+    SubCategory: SubCategoryModel(sequelize),
+    Order: OrderModel(sequelize),
     Product: ProductModel(sequelize),
     Cart: CartModel(sequelize),
-    Variant: VariantModel(sequelize),
-    Collocation: CollocationModel(sequelize),
-    Bookmark: BookmarkModel(sequelize),
     ResetPassword: ResetPasswordModel(sequelize),
 }
 
 
-//department table
-db.Department.hasMany(db.Category,{foreignKey:'categoryId'})
-db.Category.belongsTo(db.Department,{foreignKey:'categoryId'})
+////////////////////////////////////////////////////////////////////////////////
 
-//product table
-db.Product.hasMany(db.Category,{foreignKey:'categoryId'})
-db.Category.belongsTo(db.Product,{foreignKey:'categoryId'})
+// db.User.hasOne(db.Cart, {foreignKey:'user_id'})
+// db.Cart.belongsTo(db.User, {foreignKey:'user_id'})
 
-db.Product.hasMany(db.Department,{foreignKey:'departmentId'})
-db.Department.belongsTo(db.Product,{foreignKey:'departmentId'})
 
-//cart table
-db.Cart.hasMany(db.Product,{foreignKey:'itemsId'})
-db.Product.belongsTo(db.Cart,{foreignKey:'itemsId'})
+// db.Order.belongsTo(db.Product, {foreignKey:'product_id'})
+// db.Product.hasMany(db.Order, {foreignKey:'product_id'})
 
-db.Cart.hasMany(db.User,{foreignKey:'userId'})
-db.User.belongsTo(db.Cart,{foreignKey:'userId'})
 
-//variant table
-db.Variant.hasMany(db.Product,{foreignKey:'productId'})
-db.Product.belongsTo(db.Variant,{foreignKey:'productId'})
+// db.Order.belongsTo(db.Address, {foreignKey:'address_id'})
+// db.Address.hasOne(db.Order, {foreignKey:'address_id'})
 
-//collocation table
-db.Collocation.hasMany(db.Product,{foreignKey:'productId'})
-db.Product.belongsTo(db.Collocation,{foreignKey:'productId'})
+db.Product.hasMany(db.Cart, {foreignKey:'ProductId'})
+db.Cart.belongsTo(db.Product, {foreignKey:'ProductId'})
 
-db.Collocation.hasMany(db.Variant,{foreignKey:'variantId'})
-db.Variant.belongsTo(db.Collocation,{foreignKey:'variantId'})
+db.Category.hasMany(db.Product,{foreignKey: 'categoryId'})
+db.Product.belongsTo(db.Category,{ foreignKey: 'categoryId'})
 
-//bookmark table 
-db.Bookmark.hasMany(db.User,{foreignKeys:'userId'})
-db.User.belongsTo(db.Bookmark,{foreignKey:'userId'})
+db.SubCategory.hasMany(db.Product,{foreignKey: 'subcategoryId'})
+db.Product.belongsTo(db.SubCategory,{ foreignKey: 'subcategoryId'})
 
-db.Bookmark.hasMany(db.Product,{foreignKeys:'productId'})
-db.Product.belongsTo(db.Bookmark,{foreignKey:'productId'})
+db.Category.hasMany(db.SubCategory,{foreignKey: 'categoryId'})
+db.SubCategory.belongsTo(db.Category,{ foreignKey: 'categoryId'})
 
-db.Bookmark.hasMany(db.Variant,{foreignKeys:'variantId'})
-db.Variant.belongsTo(db.Bookmark,{foreignKey:'variantId'})
+//////////////////////////////////////////////////////////////////////////////////
+
 sequelize.sync()
 
 module.exports = db

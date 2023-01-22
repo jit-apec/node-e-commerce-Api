@@ -19,8 +19,6 @@ async function main( payload ) {
       const {email} = payload
       const data = await User.findOne({where:{email}})
        await ResetPassword.create({id : data.id, token, email})
-
-
      // send mail with defined transport object
       let info = await transporter.sendMail({
         from: '"Password Reset" <ravateww@gmail.com>', // sender address
